@@ -1,0 +1,8 @@
+### Index
+GET http://localhost:8080/
+
+### Users
+GET http://localhost:8080/users
+
+### Users
+GET http://localhost:8080/roles

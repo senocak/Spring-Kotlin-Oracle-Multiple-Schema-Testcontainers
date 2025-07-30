@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: Spring Kotlin Testcontainers Oracle MultiSchema
+  datasource:
+    url: jdbc:oracle:thin:@//localhost:1521/FREEPDB1
+    username: ADDRESS_SCHEMA
+    password: testpassword
+    ucp:
+      connection-factory-class-name: oracle.jdbc.pool.OracleDataSource
+      connection-pool-name: CmpCoreConnectionPoolName
+      initial-pool-size: '15'
+      max-pool-size: '91'
+      min-pool-size: '10'
+      seconds-to-trust-idle-connection: '1'
+      sql-for-validate-connection: select * from dual
+      validate-connection-on-borrow: 'true'
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:migrations
+    placeholderReplacement: false
+    sql-migration-prefix: V
+    table: flyway_schema_history
+    enabled: false
