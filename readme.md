@@ -1,9 +1,9 @@
-## Why Oracle Free Edition Will Sabotage Your Multi-Schema Logic (And What Actually Works)
+## 🧪Why Oracle Free Edition Will Sabotage Your Multi-Schema Logic (And What Actually Works)
 Why You Shouldn't Use oracle-free or oracle-xe with Testcontainers when you need multiple schemas
 
 If you've ever tried spinning up Oracle in your integration tests with Testcontainers, you've likely stumbled upon Oracle's `oracle-free` or `oracle-xe` images-both marketed as lightweight, developer-friendly versions of Oracle Database. At first glance, these seem like the perfect choice for local testing.
 
-But here's the catch: if your application logic relies on multiple schemas within a single Oracle database instance, oracle-free and oracle-xe might quietly fail you. They seem to support the basics, but under the hood, they're restrictive in a way that can lead to misleading results-or worse, brittle test environments that don't reflect production behavior. Let's break down why that is and what works instead.
+🔥But here's the catch: if your application logic relies on multiple schemas within a single Oracle database instance, oracle-free and oracle-xe might quietly fail you. They seem to support the basics, but under the hood, they're restrictive in a way that can lead to misleading results-or worse, brittle test environments that don't reflect production behavior. Let's break down why that is and what works instead.
 
 Fresh generated springboot project with oracle and testcontainers dependencies, following will be generated;
 
@@ -16,7 +16,7 @@ fun oracleFreeContainer(): OracleContainer =
 ```
 Default image is oracle-free from gvenzl.
 
-### The Problem: Hidden Schema Limitations
+### 💣The Problem: Hidden Schema Limitations
 Oracle's `free` (previously known as `XE`) edition has a number of documented and undocumented limitations-particularly around multi-schema use. When using these images in a Docker container via Testcontainers, you'll often notice:
 
 - You can't create multiple users/schemas easily - or at all.
@@ -33,7 +33,7 @@ If your integration tests or system architecture mimic production scenarios like
 
 Then using `oracle-xe` or `oracle-free` in Testcontainers will quickly become a bottleneck.
 
-Here's what I encountered personally:
+❗Here's what I encountered personally:
 ```
 ORA-65096: invalid common user or role name
 ORA-01031: insufficient privileges
@@ -55,7 +55,7 @@ private val oracleContainer: OracleContainer = OracleContainer("gvenzl/oracle-fr
         "migrations/V1__create_users_and_roles.sql"
     )
 ```
-Results in:
+🛑Results in:
 ```
 Caused by: java.lang.IllegalArgumentException: Username cannot be one of [system, sys]
 ```
@@ -66,7 +66,7 @@ private val oracleContainer: OracleContainer = OracleContainer("gvenzl/oracle-fr
     .withUsername("testUser")
     .withInitScripts("migrations/V1_create_schemas.sql") // Will fail with insufficient privileges
 ```
-Results in:
+🛑Results in:
 ```
 Caused by: java.sql.SQLSyntaxErrorException: ORA-01031: insufficient privileges
 ```
@@ -97,12 +97,12 @@ GRANT UNLIMITED TABLESPACE TO ADDRESS_SCHEMA;
 GRANT CREATE ANY TABLE TO ADDRESS_SCHEMA;
 GRANT CONNECT, RESOURCE, DBA TO ADDRESS_SCHEMA;
 ```
-Even though you get "Grant Success" in every command, connection will be fail with these users and the error message will be;
+🛑Even though you get "Grant Success" in every command, connection will be fail with these users and the error message will be;
 ```
 [72000][1045] ORA-01045: Login denied. User ADDRESS_SCHEMA does not have CREATE SESSION privilege.
 https://docs.oracle.com/error-help/db/ora-01045/
 ```
-### What about via withInitScripts
+### ✅What about via withInitScripts
 Scripts will be executed with the user provided username and password and that user will not be having the privilege to create the schemas.
 ```kotlin
 private val oracleContainer: OracleContainer = OracleContainer("gvenzl/oracle-free:slim-faststart")
@@ -116,7 +116,7 @@ private val oracleContainer: OracleContainer = OracleContainer("gvenzl/oracle-fr
         "migrations/V1__create_users_and_roles.sql"
     )
 ```
-Results in:
+🛑Results in:
 ```
 Caused by: org.testcontainers.ext.ScriptUtils$ScriptStatementFailedException: Script execution failed (migrations/V1_create_schemas.sql:1): CREATE USER USER_SCHEMA IDENTIFIED BY testpassword
 ...
@@ -141,7 +141,7 @@ This is different from some of the older or community versions floating on Docke
 - Behaves consistently with production Oracle setups (at least for development and testing purposes). 
 - Plays nicely with Testcontainers, thanks to its consistent startup behavior and Oracle tooling support.
 
-## Testcontainers Configuration Example
+## ⚙️Testcontainers Configuration Example
 Here's how to configure it in Kotlin/Java:
 #### Domain Configuration for Multiple Schemas
 ```kotlin
@@ -296,7 +296,7 @@ class MultiSchemaIntegrationTest {
 - Cross-Schema Operations: Supports views, procedures, and grants across schemas 
 - Testcontainers Integration: Seamless startup and configuration
 
-## Final Thoughts
+## 💡Final Thoughts
 If you're working on a microservices architecture where each service gets its own schema within a shared Oracle instance, avoid oracle-xe and oracle-free images for your Testcontainers setup. They're not built for this complexity-even though they might seem attractive for quick setups. It provides a much closer simulation of real Oracle environments, saving you time and bugs down the line.
 
 The official Oracle container registry image provides a much closer simulation of real Oracle environments, especially when combined with proper configuration, saving you time and bugs down the line.
